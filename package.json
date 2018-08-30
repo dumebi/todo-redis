@@ -1,0 +1,32 @@
+{
+  "name": "redis-Curd",
+  "version": "0.0.1",
+  "description": "",
+  "main": "truffle.js",
+  "start": "node server.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "dev": "lite-server",
+    "test": "mocha test/node/*.js --reporter spec"
+  },
+  "author": "Jude Dike",
+  "license": "ISC",
+  "devDependencies": {
+    "lite-server": "^2.3.0"
+  },
+  "dependencies": {
+    "async-redis": "^1.1.4",
+    "body-parser": "^1.18.3",
+    "cors": "^2.8.4",
+    "dotenv": "^6.0.0",
+    "express": "^4.16.3",
+    "mocha": "^5.2.0",
+    "mongoose": "^5.0.16",
+    "nodemailer": "^4.6.4",
+    "path": "^0.12.7",
+    "redis": "^2.8.0",
+    "supertest": "^3.1.0"
+  }
+}
