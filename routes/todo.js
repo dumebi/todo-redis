@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const redis = require('redis');
 client = redis.createClient();
+const {promisify} = require('util');
+const getAsync = promisify(client.get).bind(client);
 
 /**
  * Post Route: Create a todo
@@ -11,13 +13,12 @@ router.post('/todo/create', async (req, res) => {
     title = req.body.title,
     description = req.body.description;
     try {
-        client.hmset(id, ["title", title, "description", description], (err, result) => {
-            if (err) {
-                return res.status(500).json({ status: 'failed', data: 'Error creating todo' });
-            } else {
-                return res.status(200).json({ status: 'success', data: 'Todo created successfully' });
-            }
-        });
+        let result = await client.set(id, JSON.stringify({"title": title, "description": description}));
+        if(result){
+            return res.status(200).json({ status: 'success', data: 'Todo created successfully' });
+        } else {
+            return res.status(500).json({ status: 'failed', data: 'Error creating todo' });
+        }
     } catch (err) {
         return res.status(500).json({ status: 'failed', data: 'Error creating todo' });
     }
@@ -29,13 +30,20 @@ router.post('/todo/create', async (req, res) => {
 router.get('/todo/:id', async (req, res) => {
     const id = req.params.id;
     try {
-        client.hgetall(id, (err, result) => {
-            if (err) {
-                return res.status(500).json({ status: 'failed', data: 'Error getting todo' });
-            } else {
-                return res.status(200).json({ status: 'success', data: result });
-            }
-          });
+        const details = await getAsync(id);
+        console.log(details)
+        if (details != null) {
+            return res.status(200).json({ status: 'success', data: JSON.parse(details) });
+        } else {
+            return res.status(200).json({ status: 'success', data: JSON.parse(details) });
+        }
+        // getAsyncid, (err, result) => {
+        //     if (err) {
+        //         return res.status(500).json({ status: 'failed', data: 'Error getting todo' });
+        //     } else {
+        //         return res.status(200).json({ status: 'success', data: JSON.parse(result) });
+        //     }
+        //   });
     } catch (err) {
         return res.status(500).json({ status: 'failed', data: 'Error getting todo' });
     }
@@ -46,19 +54,15 @@ router.get('/todo/:id', async (req, res) => {
  */
 router.put('/todo/:id', async (req, res) => {
     const id = req.params.id;
-    update = [];
-    for (const i in req.body) {
-      update.push(i, req.body[i]);
-    }
-
+    title = req.body.title,
+    description = req.body.description;
     try {
-        client.hmset(id, update, (err, result) => {
-            if (err) {
-                return res.status(500).json({ status: 'failed', data: 'Error updating todo' });
-            } else {
-                return res.status(200).json({ status: 'success', data: 'Todo updated successfully' });
-            }
-        });
+        let result = await client.set(id, JSON.stringify({"title": title, "description": description}));
+        if(result){
+            return res.status(200).json({ status: 'success', data: 'Todo updated successfully' });
+        } else {
+            return res.status(500).json({ status: 'failed', data: 'Error updating todo' });
+        }
     } catch (err) {
         return res.status(500).json({ status: 'failed', data: 'Error updating todo' });
     }
@@ -70,13 +74,12 @@ router.put('/todo/:id', async (req, res) => {
 router.delete('/todo/:id', async (req, res) => {
     const id = req.params.id;
     try {
-        client.del(id, (err, result) => {
-            if (err) {
-                return res.status(500).json({ status: 'failed', data: 'Error deleting todo' });
-            } else {
-                return res.status(200).json({ status: 'success', data: 'Todo deleted successfully' });
-            }
-        });
+        let result = await client.del(id);
+        if(result){
+            return res.status(200).json({ status: 'success', data: 'Todo deleted successfully' });
+        } else {
+            return res.status(500).json({ status: 'failed', data: 'Error deleting todo' });
+        }
       } catch (err) {
         return res.status(500).json({ status: 'failed', data: 'Error deleting todo' });
       }
